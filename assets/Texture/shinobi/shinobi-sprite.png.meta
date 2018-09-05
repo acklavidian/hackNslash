@@ -1,0 +1,31 @@
+{
+  "ver": "2.2.0",
+  "uuid": "066f7cf3-d232-4b09-ac72-35be031ca721",
+  "type": "sprite",
+  "wrapMode": "clamp",
+  "filterMode": "point",
+  "premultiplyAlpha": false,
+  "subMetas": {
+    "shinobi-sprite": {
+      "ver": "1.0.3",
+      "uuid": "02151fe0-6372-412b-806c-39a0c91f01be",
+      "rawTextureUuid": "066f7cf3-d232-4b09-ac72-35be031ca721",
+      "trimType": "custom",
+      "trimThreshold": 1,
+      "rotated": false,
+      "offsetX": -235,
+      "offsetY": 1111.5,
+      "trimX": 6,
+      "trimY": 0,
+      "width": 32,
+      "height": 64,
+      "rawWidth": 514,
+      "rawHeight": 2287,
+      "borderTop": 0,
+      "borderBottom": 0,
+      "borderLeft": 0,
+      "borderRight": 0,
+      "subMetas": {}
+    }
+  }
+}
