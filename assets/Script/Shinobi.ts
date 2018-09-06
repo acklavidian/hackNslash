@@ -1,7 +1,6 @@
 import { ControlState } from './ControlState'
-const { ccclass, property } = cc._decorator;
-const EventType = cc.SystemEvent.EventType
-const KEY = cc.macro.KEY
+const { ccclass, property } = cc._decorator
+
 cc.director.getPhysicsManager().enabled = true;
 
 @ccclass
