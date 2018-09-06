@@ -1,51 +1,42 @@
+import { ControlState } from './ControlState'
 const { ccclass, property } = cc._decorator;
 const EventType = cc.SystemEvent.EventType
-const KEY = cc.KEY
+const KEY = cc.macro.KEY
+cc.director.getPhysicsManager().enabled = true;
 
 @ccclass
 export default class extends cc.Component {
   @property(cc.Animation)
-  WalkingAnimation: cc.Animation = null
+  Animation: cc.Animation = null
 
   @property(cc.Node)
   public Shinobi: cc.Node = null
   public isWalking: boolean = false
 
   onLoad () {
-    console.log('/////////////////////HERE!!!!!!!!!', EventType)
-    cc.systemEvent.on(EventType.KEY_DOWN, this.onKeyDown, this)
-    cc.systemEvent.on(EventType.KEY_UP, this.onKeyUp, this)
+    new ControlState(this.onControlInput, this)
+    this.stop()
   }
 
-  onKeyDown (event) {
-    console.log('event', event.keyCode)
-    switch (event.keyCode) {
-      case KEY.right:
-      case KEY.left:
-        return this.walk()
-    }
-  }
-
-  onKeyUp (event) {
-    switch (event.keyCode) {
-      case KEY.right:
-      case KEY.left:
-        return this.stop()
+  onControlInput ({ isPressed }) {
+    if(isPressed.shift && (isPressed.left || isPressed.right)) {
+      this.run()
+    } else if (isPressed.left || isPressed.right) {
+      this.walk()
+    } else {
+      this.stop()
     }
   }
 
   stop () {
-    if (this.isWalking) {
-      this.isWalking = false
-      return this.WalkingAnimation.stop()
-    }
+    this.Animation.play('Standing')
+  }
+
+  run () {
+    (this.Animation.currentClip.name === 'Running') || this.Animation.play('Running')
   }
 
   walk () {
-    console.log('here', this.WalkingAnimation)
-    if (!this.isWalking) {
-      this.isWalking = true
-      this.WalkingAnimation.play()
-    }
+    (this.Animation.currentClip.name === 'Walking') || this.Animation.play('Walking')
   }
 }

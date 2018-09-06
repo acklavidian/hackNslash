@@ -1,9 +1,25 @@
 {
   "__type__": "cc.AnimationClip",
-  "_name": "",
+  "_name": "Standing",
   "_objFlags": 0,
-  "_duration": 0,
+  "_native": "",
+  "_duration": 0.016666666666666666,
   "sample": 60,
-  "curveData": {},
+  "speed": 1,
+  "wrapMode": 1,
+  "curveData": {
+    "comps": {
+      "cc.Sprite": {
+        "spriteFrame": [
+          {
+            "frame": 0,
+            "value": {
+              "__uuid__": "70b44ad3-e082-441a-a333-17bdfead8c66"
+            }
+          }
+        ]
+      }
+    }
+  },
   "events": []
 }
