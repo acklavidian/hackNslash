@@ -2,17 +2,23 @@ import { ControlState } from './ControlState'
 const { ccclass, property } = cc._decorator
 
 cc.director.getPhysicsManager().enabled = true;
+cc.director.getPhysicsManager().debugDrawFlags = cc.PhysicsManager.DrawBits.e_aabbBit |
+    cc.PhysicsManager.DrawBits.e_pairBit |
+    cc.PhysicsManager.DrawBits.e_centerOfMassBit |
+    cc.PhysicsManager.DrawBits.e_jointBit |
+    cc.PhysicsManager.DrawBits.e_shapeBit
 
 @ccclass
 export default class extends cc.Component {
   @property(cc.Animation)
-  Animation: cc.Animation = null
+  public Animation: cc.Animation = null
 
   @property(cc.Node)
   public Shinobi: cc.Node = null
-  public isWalking: boolean = false
+  public rigidBody: cc.RigidBody = null
 
   onLoad () {
+    this.rigidBody = this.getComponent(cc.RigidBody)
     new ControlState(this.onControlInput, this)
     this.stop()
   }
@@ -28,6 +34,7 @@ export default class extends cc.Component {
   }
 
   stop () {
+    console.log('body', this.rigidBody)
     this.Animation.play('Standing')
   }
 
@@ -36,6 +43,7 @@ export default class extends cc.Component {
   }
 
   walk () {
-    (this.Animation.currentClip.name === 'Walking') || this.Animation.play('Walking')
+    this.rigidBody.applyForceToCenter(1)
+    return (this.Animation.currentClip.name === 'Walking') || this.Animation.play('Walking')
   }
 }
