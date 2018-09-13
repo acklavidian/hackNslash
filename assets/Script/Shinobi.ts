@@ -8,6 +8,17 @@ cc.director.getPhysicsManager().debugDrawFlags = cc.PhysicsManager.DrawBits.e_aa
     cc.PhysicsManager.DrawBits.e_jointBit |
     cc.PhysicsManager.DrawBits.e_shapeBit
 
+
+enum Direction {
+  FORWARD,
+  BACKWARD,
+  UP,
+  DOWN
+}
+
+type HorizontalDirection = Direction.FORWARD | Direction.BACKWARD
+type VerticalDirection = Direction.UP | Direction.DOWN
+
 @ccclass
 export default class extends cc.Component {
   @property(cc.Animation)
@@ -16,18 +27,29 @@ export default class extends cc.Component {
   @property(cc.Node)
   public Shinobi: cc.Node = null
   public rigidBody: cc.RigidBody = null
+  public walkSpeed: number = 100
+  public jumpStrength: number = 200
 
-  onLoad () {
+
+  start () {
     this.rigidBody = this.getComponent(cc.RigidBody)
     new ControlState(this.onControlInput, this)
     this.stop()
   }
 
   onControlInput ({ isPressed }) {
-    if(isPressed.shift && (isPressed.left || isPressed.right)) {
-      this.run()
-    } else if (isPressed.left || isPressed.right) {
-      this.walk()
+    if (isPressed.space) {
+      this.jump()
+    }
+
+    if(isPressed.shift && isPressed.right) {
+      this.run(Direction.FORWARD)
+    } else if (isPressed.shift && isPressed.left) {
+      this.run(Direction.BACKWARD)
+    } else if (isPressed.right) {
+      this.walk(Direction.FORWARD)
+    } else if (isPressed.left) {
+      this.walk(Direction.BACKWARD)
     } else {
       this.stop()
     }
@@ -38,12 +60,29 @@ export default class extends cc.Component {
     this.Animation.play('Standing')
   }
 
-  run () {
-    (this.Animation.currentClip.name === 'Running') || this.Animation.play('Running')
+  run (direction: HorizontalDirection) {
+    const isForward = (direction === Direction.FORWARD)
+    const speed = (isForward) ? this.walkSpeed : -this.walkSpeed
+    const walkVelocity: cc.Vec2 = new cc.Vec2(speed * 3, this.rigidBody.linearVelocity.y)
+    const flip = cc.flipX(!isForward)
+    this.Shinobi.runAction(flip)
+    this.rigidBody.linearVelocity = walkVelocity
+    return (this.Animation.currentClip.name === 'Running') || this.Animation.play('Running')
   }
 
-  walk () {
-    this.rigidBody.applyForceToCenter(1)
+  walk (direction: HorizontalDirection) {
+    const isForward = (direction === Direction.FORWARD)
+    const speed = (isForward) ? this.walkSpeed : -this.walkSpeed
+    const walkVelocity: cc.Vec2 = new cc.Vec2(speed, this.rigidBody.linearVelocity.y)
+    const flip = cc.flipX(!isForward)
+    this.Shinobi.runAction(flip)
+    this.rigidBody.linearVelocity = walkVelocity
     return (this.Animation.currentClip.name === 'Walking') || this.Animation.play('Walking')
+  }
+
+  jump () {
+    console.log('jump')
+    const jumpVelocity: cc.Vec2 = new cc.Vec2(this.rigidBody.linearVelocity.x, this.jumpStrength)
+    this.rigidBody.linearVelocity = jumpVelocity
   }
 }
