@@ -1,12 +1,17 @@
 import { ControlState } from './ControlState'
 const { ccclass, property } = cc._decorator
 
+const debug = cc.PhysicsManager.DrawBits
+
+console.log(cc.PhysicsManager.DrawBits)
 cc.director.getPhysicsManager().enabled = true;
-cc.director.getPhysicsManager().debugDrawFlags = cc.PhysicsManager.DrawBits.e_aabbBit |
-    cc.PhysicsManager.DrawBits.e_pairBit |
-    cc.PhysicsManager.DrawBits.e_centerOfMassBit |
-    cc.PhysicsManager.DrawBits.e_jointBit |
-    cc.PhysicsManager.DrawBits.e_shapeBit
+cc.director.getPhysicsManager().debugDrawFlags = debug['e_aabbBit'] |
+    debug['e_shapeBit'] |
+    debug['e_jointBit'] |
+    debug['e_centerOfMassBit'] |
+    debug['e_particleBit'] |
+    debug['e_all'] |
+    debug['e_controllerBit']
 
 
 enum Direction {
@@ -31,13 +36,36 @@ export default class extends cc.Component {
   public jumpStrength: number = 200
 
 
-  start () {
+  public start () {
     this.rigidBody = this.getComponent(cc.RigidBody)
     new ControlState(this.onControlInput, this)
     this.stop()
   }
 
-  onControlInput ({ isPressed }) {
+  public update () {
+    this.react()
+  }
+
+  public isMoving(direction?: Direction) {
+    const velocity = this.rigidBody.linearVelocity
+    switch (direction) {
+      case (Direction.FORWARD): return velocity.x > 0
+      case (Direction.BACKWARD): return velocity.x < 0
+      case (Direction.DOWN): return velocity.y < 0
+      case (Direction.FORWARD): return velocity.y > 0
+      default: return ((velocity.y !== 0) || (velocity.x !== 0))
+    }
+  }
+
+  public react () {
+    console.log(this.isMoving() ? 'YES' : 'NO')
+    if (this.isMoving(Direction.FORWARD)) console.log('FORWARD')
+    else if (this.isMoving(Direction.BACKWARD)) console.log('BACKWARD')
+    else if (this.isMoving(Direction.DOWN)) console.log('DOWN')
+    else if (this.isMoving(Direction.UP)) console.log('UP')
+  }
+
+  private onControlInput ({ isPressed }) {
     if (isPressed.space) {
       this.jump()
     }
@@ -55,34 +83,34 @@ export default class extends cc.Component {
     }
   }
 
-  stop () {
-    console.log('body', this.rigidBody)
+  public stop () {
+    const velocity = new cc.Vec2(this.rigidBody.linearVelocity.x / 2, this.rigidBody.linearVelocity.y)
+    this.rigidBody.linearVelocity = velocity
     this.Animation.play('Standing')
   }
 
-  run (direction: HorizontalDirection) {
-    const isForward = (direction === Direction.FORWARD)
-    const speed = (isForward) ? this.walkSpeed : -this.walkSpeed
-    const walkVelocity: cc.Vec2 = new cc.Vec2(speed * 3, this.rigidBody.linearVelocity.y)
-    const flip = cc.flipX(!isForward)
-    this.Shinobi.runAction(flip)
-    this.rigidBody.linearVelocity = walkVelocity
-    return (this.Animation.currentClip.name === 'Running') || this.Animation.play('Running')
+  public run (direction: HorizontalDirection) {
+    return this.move(direction, 'Running', this.walkSpeed * 3)
   }
 
-  walk (direction: HorizontalDirection) {
-    const isForward = (direction === Direction.FORWARD)
-    const speed = (isForward) ? this.walkSpeed : -this.walkSpeed
-    const walkVelocity: cc.Vec2 = new cc.Vec2(speed, this.rigidBody.linearVelocity.y)
-    const flip = cc.flipX(!isForward)
-    this.Shinobi.runAction(flip)
-    this.rigidBody.linearVelocity = walkVelocity
-    return (this.Animation.currentClip.name === 'Walking') || this.Animation.play('Walking')
+  public walk (direction: HorizontalDirection) {
+    return this.move(direction, 'Walking', this.walkSpeed)
   }
 
-  jump () {
-    console.log('jump')
-    const jumpVelocity: cc.Vec2 = new cc.Vec2(this.rigidBody.linearVelocity.x, this.jumpStrength)
-    this.rigidBody.linearVelocity = jumpVelocity
+  public jump () {
+    const velocity: cc.Vec2 = new cc.Vec2(this.rigidBody.linearVelocity.x, this.jumpStrength)
+    this.rigidBody.linearVelocity = velocity
+    console.log(this.Animation.currentClip.name)
+    return (this.Animation.currentClip.name === 'Jumping' || this.Animation.play('Jumping'))
+  }
+
+  protected move (direction: HorizontalDirection, animationName: string, movementSpeed: number) {
+    const isForward = (direction === Direction.FORWARD)
+    const speed = (isForward) ? movementSpeed : -movementSpeed
+    const velocity: cc.Vec2 = new cc.Vec2(speed, this.rigidBody.linearVelocity.y)
+    const flip = cc.flipX(!isForward)
+    this.Shinobi.runAction(flip)
+    this.rigidBody.linearVelocity = velocity
+    return (this.Animation.currentClip.name === animationName) || this.Animation.play(animationName)
   }
 }
